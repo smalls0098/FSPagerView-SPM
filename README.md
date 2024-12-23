@@ -1,6 +1,6 @@
-# FSPagerView-SPM
+# FSPagerView-SPM (Swift 6.0)
 
-A Swift Package Manager version of FSPagerView, fully compatible with Swift 6.0. This package provides an elegant slider library for iOS applications with various customization options and transition effects.
+A Swift Package Manager version of FSPagerView, fully compatible with **Swift 6.0**. This package provides an elegant slider library for iOS applications with various customization options and transition effects.
 
 ## Features
 - Infinite scrolling
