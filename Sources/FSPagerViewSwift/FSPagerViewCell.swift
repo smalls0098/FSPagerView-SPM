@@ -144,6 +144,7 @@ open class FSPagerViewCell: UICollectionViewCell {
         }
     }
     
+    @MainActor
     open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if context == kvoContext {
             if keyPath == "font" {
