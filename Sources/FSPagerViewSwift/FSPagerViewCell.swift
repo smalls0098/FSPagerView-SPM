@@ -8,6 +8,8 @@
 
 import UIKit
 
+import UIKit
+
 open class FSPagerViewCell: UICollectionViewCell {
     
     /// Returns the label used for the main textual content of the pager view cell.
@@ -140,65 +142,15 @@ open class FSPagerViewCell: UICollectionViewCell {
         }
     }
     
-    open override nonisolated func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+    @MainActor
+    open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         let localContext = UnsafeMutableRawPointer(bitPattern: kvoContextPointer)
-        
         if context == localContext {
             if keyPath == "font" {
-                Task { @MainActor in
-                    self.setNeedsLayout()
-                }
+                self.setNeedsLayout()
             }
         } else {
-            // 필요한 값만 즉시 추출
-            let changeKind = change?[.kindKey] as? NSNumber
-            let changeNew = change?[.newKey]
-            let changeOld = change?[.oldKey]
-            let changePrior = change?[.notificationIsPriorKey] as? Bool
-            let changeIndexes = change?[.indexesKey] as? IndexSet
-            
-            Task { @MainActor in
-                // 새로운 딕셔너리 생성
-                var newChange: [NSKeyValueChangeKey: Any] = [:]
-                if let changeKind { newChange[.kindKey] = changeKind }
-                if let changeNew { newChange[.newKey] = changeNew }
-                if let changeOld { newChange[.oldKey] = changeOld }
-                if let changePrior { newChange[.notificationIsPriorKey] = changePrior }
-                if let changeIndexes { newChange[.indexesKey] = changeIndexes }
-                
-                super.observeValue(
-                    forKeyPath: keyPath,
-                    of: object,
-                    change: newChange,
-                    context: context
-                )
-            }
-        }
-    }
-
-    private nonisolated func handleObserveValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        // 필요한 값만 즉시 추출
-        let changeKind = change?[.kindKey] as? NSNumber
-        let changeNew = change?[.newKey]
-        let changeOld = change?[.oldKey]
-        let changePrior = change?[.notificationIsPriorKey] as? Bool
-        let changeIndexes = change?[.indexesKey] as? IndexSet
-        
-        Task { @MainActor in
-            // 새로운 딕셔너리 생성
-            var newChange: [NSKeyValueChangeKey: Any] = [:]
-            if let changeKind { newChange[.kindKey] = changeKind }
-            if let changeNew { newChange[.newKey] = changeNew }
-            if let changeOld { newChange[.oldKey] = changeOld }
-            if let changePrior { newChange[.notificationIsPriorKey] = changePrior }
-            if let changeIndexes { newChange[.indexesKey] = changeIndexes }
-            
-            super.observeValue(
-                forKeyPath: keyPath,
-                of: object,
-                change: newChange,
-                context: context
-            )
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
 }
