@@ -11,7 +11,7 @@ A Swift Package Manager version of FSPagerView, fully compatible with **Swift 6.
 - Support for both UIKit and SwiftUI
 
 ## Requirements
-- iOS 13.0+
+- iOS 15.0+
 - Swift 6.0+
 - Xcode 15.0+
 
