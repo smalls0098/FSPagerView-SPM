@@ -1,2 +1,15 @@
-
+# macOS 디렉토리
 .DS_Store
+
+# Xcode 임시 파일
+*.xcuserdata/
+*.xcworkspace/
+build/
+
+# Swift Package Manager 빌드 디렉토리
+.build/
+
+# Git 관련
+.git/
+
+.swiftpm/xcode/xcuserdata/kyuchul.xcuserdatad/xcschemes/
