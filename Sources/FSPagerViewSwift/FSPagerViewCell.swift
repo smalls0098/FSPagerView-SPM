@@ -13,7 +13,11 @@ open class FSPagerViewCell: UICollectionViewCell {
     
     // MARK: - Properties
     
-    private var subscriptions = Set<AnyCancellable>()
+    private final class SubscriptionStore: @unchecked Sendable {
+           var subscriptions = Set<AnyCancellable>()
+       }
+    
+    private let subscriptionStore = SubscriptionStore()
     
     private let selectionColor = UIColor(white: 0.2, alpha: 0.2)
     private weak var selectedForegroundView: UIView?
@@ -42,7 +46,7 @@ open class FSPagerViewCell: UICollectionViewCell {
             .sink { [weak self] _ in
                 self?.setNeedsLayout()
             }
-            .store(in: &subscriptions)
+            .store(in: &subscriptionStore.subscriptions)
         
         _textLabel = textLabel
         return textLabel
@@ -142,7 +146,9 @@ open class FSPagerViewCell: UICollectionViewCell {
     // MARK: - Cleanup
     
     deinit {
-        subscriptions.removeAll()
+        subscriptionStore.subscriptions.removeAll()
     }
 }
+
+
 
