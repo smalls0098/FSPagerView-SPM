@@ -8,7 +8,6 @@
 
 import UIKit
 
-@MainActor
 open class FSPagerViewCell: UICollectionViewCell {
     
     /// Returns the label used for the main textual content of the pager view cell.
@@ -144,17 +143,17 @@ open class FSPagerViewCell: UICollectionViewCell {
         }
     }
     
-    @MainActor
     open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if context == kvoContext {
-            if keyPath == "font" {
-                MainActor.assumeIsolated {
-                    self.setNeedsLayout()
+        MainActor.assumeIsolated {
+            if context == kvoContext {
+                if keyPath == "font" {
+                    MainActor.assumeIsolated {
+                        self.setNeedsLayout()
+                    }
                 }
+            } else {
+                super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
             }
-        } else {
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
-    
 }
