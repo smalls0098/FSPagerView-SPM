@@ -7,89 +7,91 @@
 //
 
 import UIKit
-
-import UIKit
+import Combine
 
 open class FSPagerViewCell: UICollectionViewCell {
     
-    /// Returns the label used for the main textual content of the pager view cell.
+    // MARK: - Properties
+    
+    private var fontSubscription: AnyCancellable?
+    
+    // 선택 상태 관련
+    private let selectionColor = UIColor(white: 0.2, alpha: 0.2)
+    private weak var selectedForegroundView: UIView?
+    
+    // MARK: - Public Properties
+    
     @objc
     open var textLabel: UILabel? {
-        if let _ = _textLabel {
-            return _textLabel
+        if let existingLabel = _textLabel {
+            return existingLabel
         }
-        let view = UIView(frame: .zero)
-        view.isUserInteractionEnabled = false
-        view.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        
+        let containerView = UIView(frame: .zero)
+        containerView.isUserInteractionEnabled = false
+        containerView.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         
         let textLabel = UILabel(frame: .zero)
         textLabel.textColor = .white
         textLabel.font = UIFont.preferredFont(forTextStyle: .body)
-        self.contentView.addSubview(view)
-        view.addSubview(textLabel)
         
-        textLabel.addObserver(self, forKeyPath: "font", options: [.old,.new], context: kvoContext)
+        self.contentView.addSubview(containerView)
+        containerView.addSubview(textLabel)
+        
+        // Combine을 사용한 font 변경 감지
+        fontSubscription = textLabel.publisher(for: \.font)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.setNeedsLayout()
+            }
         
         _textLabel = textLabel
         return textLabel
     }
     
-    /// Returns the image view of the pager view cell. Default is nil.
     @objc
     open var imageView: UIImageView? {
-        if let _ = _imageView {
-            return _imageView
+        if let existingImageView = _imageView {
+            return existingImageView
         }
         let imageView = UIImageView(frame: .zero)
         self.contentView.addSubview(imageView)
         _imageView = imageView
+        
+        // 이미지뷰가 생성될 때 선택 오버레이도 함께 설정
+        let overlayView = UIView(frame: imageView.bounds)
+        overlayView.layer.backgroundColor = UIColor.clear.cgColor
+        imageView.addSubview(overlayView)
+        selectedForegroundView = overlayView
+        
         return imageView
     }
     
-    fileprivate weak var _textLabel: UILabel?
-    fileprivate weak var _imageView: UIImageView?
+    // MARK: - Private Properties
     
-    fileprivate let kvoContext = UnsafeMutableRawPointer(bitPattern: 0)
-    fileprivate let kvoContextPointer = 0
-    fileprivate let selectionColor = UIColor(white: 0.2, alpha: 0.2)
+    private weak var _textLabel: UILabel?
+    private weak var _imageView: UIImageView?
     
-    fileprivate weak var _selectedForegroundView: UIView?
-    fileprivate var selectedForegroundView: UIView? {
-        guard _selectedForegroundView == nil else {
-            return _selectedForegroundView
-        }
-        guard let imageView = _imageView else {
-            return nil
-        }
-        let view = UIView(frame: imageView.bounds)
-        imageView.addSubview(view)
-        _selectedForegroundView = view
-        return view
-    }
+    // MARK: - Selection Handling
     
     open override var isHighlighted: Bool {
-        set {
-            super.isHighlighted = newValue
-            if newValue {
-                self.selectedForegroundView?.layer.backgroundColor = self.selectionColor.cgColor
-            } else if !super.isSelected {
-                self.selectedForegroundView?.layer.backgroundColor = UIColor.clear.cgColor
-            }
-        }
-        get {
-            return super.isHighlighted
+        didSet {
+            updateSelectionState()
         }
     }
     
     open override var isSelected: Bool {
-        set {
-            super.isSelected = newValue
-            self.selectedForegroundView?.layer.backgroundColor = newValue ? self.selectionColor.cgColor : UIColor.clear.cgColor
-        }
-        get {
-            return super.isSelected
+        didSet {
+            updateSelectionState()
         }
     }
+    
+    private func updateSelectionState() {
+        let shouldShowSelection = isHighlighted || isSelected
+        selectedForegroundView?.layer.backgroundColor = shouldShowSelection ? selectionColor.cgColor : UIColor.clear.cgColor
+    }
+    
+    // MARK: - Initialization
     
     public override init(frame: CGRect) {
         super.init(frame: frame)
@@ -101,56 +103,47 @@ open class FSPagerViewCell: UICollectionViewCell {
         commonInit()
     }
     
-    fileprivate func commonInit() {
-        self.contentView.backgroundColor = UIColor.clear
-        self.backgroundColor = UIColor.clear
-        self.contentView.layer.shadowColor = UIColor.black.cgColor
-        self.contentView.layer.shadowRadius = 5
-        self.contentView.layer.shadowOpacity = 0.75
-        self.contentView.layer.shadowOffset = .zero
+    private func commonInit() {
+        contentView.backgroundColor = .clear
+        backgroundColor = .clear
+        
+        // Shadow 설정
+        contentView.layer.shadowColor = UIColor.black.cgColor
+        contentView.layer.shadowRadius = 5
+        contentView.layer.shadowOpacity = 0.75
+        contentView.layer.shadowOffset = .zero
     }
+    
+    // MARK: - Layout
+    
+    open override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        // ImageView layout
+        _imageView?.frame = contentView.bounds
+        selectedForegroundView?.frame = contentView.bounds
+        
+        // TextLabel layout
+        if let textLabel = _textLabel {
+            let containerView = textLabel.superview!
+            
+            // Container view layout
+            let labelHeight = textLabel.font.pointSize * 1.5
+            containerView.frame = CGRect(
+                x: 0,
+                y: contentView.frame.height - labelHeight,
+                width: contentView.frame.width,
+                height: labelHeight
+            )
+            
+            // Label layout
+            textLabel.frame = containerView.bounds.insetBy(dx: 8, dy: 1)
+        }
+    }
+    
+    // MARK: - Cleanup
     
     deinit {
-        if let textLabel = _textLabel {
-            textLabel.removeObserver(self, forKeyPath: "font", context: kvoContext)
-        }
-    }
-    
-    override open func layoutSubviews() {
-        super.layoutSubviews()
-        if let imageView = _imageView {
-            imageView.frame = self.contentView.bounds
-        }
-        if let textLabel = _textLabel {
-            textLabel.superview!.frame = {
-                var rect = self.contentView.bounds
-                let height = textLabel.font.pointSize*1.5
-                rect.size.height = height
-                rect.origin.y = self.contentView.frame.height-height
-                return rect
-            }()
-            textLabel.frame = {
-                var rect = textLabel.superview!.bounds
-                rect = rect.insetBy(dx: 8, dy: 0)
-                rect.size.height -= 1
-                rect.origin.y += 1
-                return rect
-            }()
-        }
-        if let selectedForegroundView = _selectedForegroundView {
-            selectedForegroundView.frame = self.contentView.bounds
-        }
-    }
-    
-    @MainActor
-    open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        let localContext = UnsafeMutableRawPointer(bitPattern: kvoContextPointer)
-        if context == localContext {
-            if keyPath == "font" {
-                self.setNeedsLayout()
-            }
-        } else {
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-        }
+        fontSubscription?.cancel()
     }
 }
