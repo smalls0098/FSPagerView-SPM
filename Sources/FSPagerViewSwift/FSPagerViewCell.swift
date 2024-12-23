@@ -142,34 +142,34 @@ open class FSPagerViewCell: UICollectionViewCell {
     
     open override nonisolated func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         let localContext = UnsafeMutableRawPointer(bitPattern: kvoContextPointer)
-        let localKeyPath = keyPath
         
         if context == localContext {
-            if localKeyPath == "font" {
+            if keyPath == "font" {
                 Task { @MainActor in
                     self.setNeedsLayout()
                 }
             }
         } else {
-            // 필요한 값들만 안전하게 복사
-            let localChange = change?.compactMapValues { value -> Any? in
-                switch value {
-                case let number as NSNumber: return number.copy() as? NSNumber
-                case let string as String: return string
-                case let date as Date: return date
-                case let data as Data: return data
-                case let array as [Any]: return array
-                case let dict as [AnyHashable: Any]: return dict
-                default: return nil
-                }
-            }
-            let localObject = object
+            // 필요한 값만 즉시 추출
+            let changeKind = change?[.kindKey] as? NSNumber
+            let changeNew = change?[.newKey]
+            let changeOld = change?[.oldKey]
+            let changePrior = change?[.notificationIsPriorKey] as? Bool
+            let changeIndexes = change?[.indexesKey] as? IndexSet
             
             Task { @MainActor in
+                // 새로운 딕셔너리 생성
+                var newChange: [NSKeyValueChangeKey: Any] = [:]
+                if let changeKind { newChange[.kindKey] = changeKind }
+                if let changeNew { newChange[.newKey] = changeNew }
+                if let changeOld { newChange[.oldKey] = changeOld }
+                if let changePrior { newChange[.notificationIsPriorKey] = changePrior }
+                if let changeIndexes { newChange[.indexesKey] = changeIndexes }
+                
                 super.observeValue(
-                    forKeyPath: localKeyPath,
-                    of: localObject,
-                    change: localChange,
+                    forKeyPath: keyPath,
+                    of: object,
+                    change: newChange,
                     context: context
                 )
             }
@@ -177,25 +177,26 @@ open class FSPagerViewCell: UICollectionViewCell {
     }
 
     private nonisolated func handleObserveValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        let localKeyPath = keyPath
-        let localObject = object
-        let localChange = change?.compactMapValues { value -> Any? in
-            switch value {
-            case let number as NSNumber: return number.copy() as? NSNumber
-            case let string as String: return string
-            case let date as Date: return date
-            case let data as Data: return data
-            case let array as [Any]: return array
-            case let dict as [AnyHashable: Any]: return dict
-            default: return nil
-            }
-        }
+        // 필요한 값만 즉시 추출
+        let changeKind = change?[.kindKey] as? NSNumber
+        let changeNew = change?[.newKey]
+        let changeOld = change?[.oldKey]
+        let changePrior = change?[.notificationIsPriorKey] as? Bool
+        let changeIndexes = change?[.indexesKey] as? IndexSet
         
         Task { @MainActor in
+            // 새로운 딕셔너리 생성
+            var newChange: [NSKeyValueChangeKey: Any] = [:]
+            if let changeKind { newChange[.kindKey] = changeKind }
+            if let changeNew { newChange[.newKey] = changeNew }
+            if let changeOld { newChange[.oldKey] = changeOld }
+            if let changePrior { newChange[.notificationIsPriorKey] = changePrior }
+            if let changeIndexes { newChange[.indexesKey] = changeIndexes }
+            
             super.observeValue(
-                forKeyPath: localKeyPath,
-                of: localObject,
-                change: localChange,
+                forKeyPath: keyPath,
+                of: object,
+                change: newChange,
                 context: context
             )
         }
