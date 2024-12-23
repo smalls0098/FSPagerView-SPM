@@ -139,11 +139,13 @@ open class FSPagerViewCell: UICollectionViewCell {
             selectedForegroundView.frame = self.contentView.bounds
         }
     }
-
+    
     open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if context == kvoContext {
             if keyPath == "font" {
-                self.setNeedsLayout()
+                MainActor.assumeIsolated {
+                    self.setNeedsLayout()
+                }
             }
         } else {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
