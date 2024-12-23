@@ -27,7 +27,9 @@ open class FSPagerViewCell: UICollectionViewCell {
         self.contentView.addSubview(view)
         view.addSubview(textLabel)
         
-        textLabel.addObserver(self, forKeyPath: "font", options: [.old,.new], context: kvoContext)
+        MainActor.assumeIsolated {
+            textLabel.addObserver(self, forKeyPath: "font", options: [.old,.new], context: kvoContext)
+        }
         
         _textLabel = textLabel
         return textLabel
@@ -109,8 +111,10 @@ open class FSPagerViewCell: UICollectionViewCell {
     }
     
     deinit {
-        if let textLabel = _textLabel {
-            textLabel.removeObserver(self, forKeyPath: "font", context: kvoContext)
+        MainActor.assumeIsolated {
+            if let textLabel = _textLabel {
+                textLabel.removeObserver(self, forKeyPath: "font", context: kvoContext)
+            }
         }
     }
     
