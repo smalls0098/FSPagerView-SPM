@@ -139,19 +139,20 @@ open class FSPagerViewCell: UICollectionViewCell {
         }
     }
     
+    @MainActor
     open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if context == self.kvoContext {
-                if keyPath == "font" {
-                    self.setNeedsLayout()
-                }
-            } else {
-                self.handleObserveValue(forKeyPath: keyPath, of: object, change: change, context: context)
+        // Main Actor에서 안전하게 접근
+        if context == self.kvoContext {
+            if keyPath == "font" {
+                self.setNeedsLayout()
             }
+        } else {
+            // MainActor에서 호출하는 방법
+            self.handleObserveValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
-    
+
+    @MainActor
     func handleObserveValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
     }
