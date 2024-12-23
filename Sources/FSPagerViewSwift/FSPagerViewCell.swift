@@ -144,12 +144,14 @@ open class FSPagerViewCell: UICollectionViewCell {
     }
     
     open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        Task { @MainActor in
-            if context == kvoContext {
-                if keyPath == "font" {
+        if context == kvoContext {
+            if keyPath == "font" {
+                Task { @MainActor in
                     self.setNeedsLayout()
                 }
-            } else {
+            }
+        } else {
+            Task { @MainActor in
                 super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
             }
         }
