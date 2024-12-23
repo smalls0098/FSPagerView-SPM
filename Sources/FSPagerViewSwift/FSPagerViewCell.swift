@@ -26,7 +26,7 @@ open class FSPagerViewCell: UICollectionViewCell {
         self.contentView.addSubview(view)
         view.addSubview(textLabel)
         
-        textLabel.addObserver(self, forKeyPath: "font", options: [.old,.new], context: FSPagerViewCell.kvoContext)
+        textLabel.addObserver(self, forKeyPath: "font", options: [.old,.new], context: kvoContext)
         
         _textLabel = textLabel
         return textLabel
@@ -47,8 +47,8 @@ open class FSPagerViewCell: UICollectionViewCell {
     fileprivate weak var _textLabel: UILabel?
     fileprivate weak var _imageView: UIImageView?
     
-    fileprivate static let kvoContext = UnsafeMutableRawPointer(bitPattern: 0)
-    
+    fileprivate let kvoContext = UnsafeMutableRawPointer(bitPattern: 0)
+    fileprivate let kvoContextPointer = 0
     fileprivate let selectionColor = UIColor(white: 0.2, alpha: 0.2)
     
     fileprivate weak var _selectedForegroundView: UIView?
@@ -110,7 +110,7 @@ open class FSPagerViewCell: UICollectionViewCell {
     
     deinit {
         if let textLabel = _textLabel {
-            textLabel.removeObserver(self, forKeyPath: "font", context: FSPagerViewCell.kvoContext)
+            textLabel.removeObserver(self, forKeyPath: "font", context: kvoContext)
         }
     }
     
@@ -141,7 +141,8 @@ open class FSPagerViewCell: UICollectionViewCell {
     }
     
     open override nonisolated func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if context == FSPagerViewCell.kvoContext { // static property로 접근
+        let localContext = UnsafeMutableRawPointer(bitPattern: kvoContextPointer)
+        if context == localContext {
             Task { @MainActor in
                 if keyPath == "font" {
                     self.setNeedsLayout()
