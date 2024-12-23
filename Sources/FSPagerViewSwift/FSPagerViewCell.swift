@@ -147,13 +147,13 @@ open class FSPagerViewCell: UICollectionViewCell {
                 self.setNeedsLayout()
             }
         } else {
-            // MainActor에서 호출하는 방법
             self.handleObserveValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
 
-    @MainActor
     func handleObserveValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+        Task { @MainActor in
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+        }
     }
 }
