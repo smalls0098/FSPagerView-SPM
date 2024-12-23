@@ -140,8 +140,9 @@ open class FSPagerViewCell: UICollectionViewCell {
     }
     
     open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        DispatchQueue.main.async {
-            if context == kvoContext {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if context == self.kvoContext {
                 if keyPath == "font" {
                     self.setNeedsLayout()
                 }
