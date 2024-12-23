@@ -21,6 +21,7 @@ public enum FSPagerViewTransformerType: Int {
     case cubic
 }
 
+@MainActor
 open class FSPagerViewTransformer: NSObject {
     
     open internal(set) weak var pagerView: FSPagerView?
@@ -42,7 +43,7 @@ open class FSPagerViewTransformer: NSObject {
         }
     }
     
-    // Apply transform to attributes - zIndex: Int, frame: CGRect, alpha: CGFloat, transform: CGAffineTransform or transform3D: CATransform3D.
+    // Apply transform to attributes - zIndex: Int, frame: CGRect, alpha: CGFloat, transform: CGAffineTransform or transform3D: CATransform3D.'
     open func applyTransform(to attributes: FSPagerViewLayoutAttributes) {
         guard let pagerView = self.pagerView else {
             return
