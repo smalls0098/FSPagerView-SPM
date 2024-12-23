@@ -78,7 +78,7 @@ public protocol FSPagerViewDelegate: NSObjectProtocol {
 open class FSPagerView: UIView,UICollectionViewDataSource,UICollectionViewDelegate {
     
     // MARK: - Public properties
-
+    
     /// The object that acts as the data source of the pager view.
     @IBOutlet open weak var dataSource: FSPagerViewDataSource?
     
@@ -289,7 +289,7 @@ open class FSPagerView: UIView,UICollectionViewDataSource,UICollectionViewDelega
         }
     }
     
-    #if TARGET_INTERFACE_BUILDER
+#if TARGET_INTERFACE_BUILDER
     
     open override func prepareForInterfaceBuilder() {
         super.prepareForInterfaceBuilder()
@@ -304,13 +304,14 @@ open class FSPagerView: UIView,UICollectionViewDataSource,UICollectionViewDelega
         self.contentView.addSubview(label)
     }
     
-    #endif
-    @MainActor
+#endif
     deinit {
-        self.collectionView.dataSource = nil
-        self.collectionView.delegate = nil
+        DispatchQueue.main.async { [weak self] in
+            self?.collectionView.dataSource = nil
+            self?.collectionView.delegate = nil
+        }
     }
-
+    
     // MARK: - UICollectionViewDataSource
     
     public func numberOfSections(in collectionView: UICollectionView) -> Int {
