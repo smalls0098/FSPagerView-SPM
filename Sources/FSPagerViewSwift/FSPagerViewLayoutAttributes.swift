@@ -13,7 +13,6 @@ open class FSPagerViewLayoutAttributes: UICollectionViewLayoutAttributes {
     @MainActor
     open var position: CGFloat = 0
     
-    @MainActor
     open override func isEqual(_ object: Any?) -> Bool {
         guard let object = object as? FSPagerViewLayoutAttributes else {
             return false
