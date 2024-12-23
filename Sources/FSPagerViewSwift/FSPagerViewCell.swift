@@ -13,9 +13,8 @@ open class FSPagerViewCell: UICollectionViewCell {
     
     // MARK: - Properties
     
-    private var fontSubscription: AnyCancellable?
+    private var subscriptions = Set<AnyCancellable>()
     
-    // 선택 상태 관련
     private let selectionColor = UIColor(white: 0.2, alpha: 0.2)
     private weak var selectedForegroundView: UIView?
     
@@ -38,12 +37,12 @@ open class FSPagerViewCell: UICollectionViewCell {
         self.contentView.addSubview(containerView)
         containerView.addSubview(textLabel)
         
-        // Combine을 사용한 font 변경 감지
-        fontSubscription = textLabel.publisher(for: \.font)
+        textLabel.publisher(for: \.font)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.setNeedsLayout()
             }
+            .store(in: &subscriptions)
         
         _textLabel = textLabel
         return textLabel
@@ -107,7 +106,6 @@ open class FSPagerViewCell: UICollectionViewCell {
         contentView.backgroundColor = .clear
         backgroundColor = .clear
         
-        // Shadow 설정
         contentView.layer.shadowColor = UIColor.black.cgColor
         contentView.layer.shadowRadius = 5
         contentView.layer.shadowOpacity = 0.75
@@ -144,6 +142,7 @@ open class FSPagerViewCell: UICollectionViewCell {
     // MARK: - Cleanup
     
     deinit {
-        fontSubscription?.cancel()
+        subscriptions.removeAll()
     }
 }
+
