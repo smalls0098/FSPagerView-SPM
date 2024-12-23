@@ -11,21 +11,28 @@ import UIKit
 open class FSPagerViewLayoutAttributes: UICollectionViewLayoutAttributes {
     open var position: CGFloat = 0
 
-    nonisolated open override func isEqual(_ object: Any?) -> Bool {
+    open override func isEqual(_ object: Any?) -> Bool {
         guard let object = object as? FSPagerViewLayoutAttributes else {
             return false
         }
         
         var isEqual = super.isEqual(object)
-        isEqual = isEqual && (self.position == object.position)
+        
+        MainActor.assumeIsolated {
+            isEqual = isEqual && (self.position == object.position)
+        }
         
         return isEqual
     }
 
-    nonisolated open override func copy(with zone: NSZone? = nil) -> Any {
+    open override func copy(with zone: NSZone? = nil) -> Any {
         let copy = super.copy(with: zone) as! FSPagerViewLayoutAttributes
-        copy.position = self.position
+        
+        // MainActor.assumeIsolated로 메인 스레드에서 실행된다고 가정
+        MainActor.assumeIsolated {
+            copy.position = self.position
+        }
+        
         return copy
     }
 }
-
