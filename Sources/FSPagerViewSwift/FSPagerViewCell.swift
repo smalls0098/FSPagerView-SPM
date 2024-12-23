@@ -142,20 +142,62 @@ open class FSPagerViewCell: UICollectionViewCell {
     
     open override nonisolated func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         let localContext = UnsafeMutableRawPointer(bitPattern: kvoContextPointer)
+        let localKeyPath = keyPath
+        
         if context == localContext {
-            Task { @MainActor in
-                if keyPath == "font" {
+            if localKeyPath == "font" {
+                Task { @MainActor in
                     self.setNeedsLayout()
                 }
             }
         } else {
-            handleObserveValue(forKeyPath: keyPath, of: object, change: change, context: context)
+            // 필요한 값들만 안전하게 복사
+            let localChange = change?.compactMapValues { value -> Any? in
+                switch value {
+                case let number as NSNumber: return number.copy() as? NSNumber
+                case let string as String: return string
+                case let date as Date: return date
+                case let data as Data: return data
+                case let array as [Any]: return array
+                case let dict as [AnyHashable: Any]: return dict
+                default: return nil
+                }
+            }
+            let localObject = object
+            
+            Task { @MainActor in
+                super.observeValue(
+                    forKeyPath: localKeyPath,
+                    of: localObject,
+                    change: localChange,
+                    context: context
+                )
+            }
         }
     }
 
     private nonisolated func handleObserveValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        let localKeyPath = keyPath
+        let localObject = object
+        let localChange = change?.compactMapValues { value -> Any? in
+            switch value {
+            case let number as NSNumber: return number.copy() as? NSNumber
+            case let string as String: return string
+            case let date as Date: return date
+            case let data as Data: return data
+            case let array as [Any]: return array
+            case let dict as [AnyHashable: Any]: return dict
+            default: return nil
+            }
+        }
+        
         Task { @MainActor in
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+            super.observeValue(
+                forKeyPath: localKeyPath,
+                of: localObject,
+                change: localChange,
+                context: context
+            )
         }
     }
 }
