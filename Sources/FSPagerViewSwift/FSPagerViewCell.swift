@@ -26,9 +26,7 @@ open class FSPagerViewCell: UICollectionViewCell {
         self.contentView.addSubview(view)
         view.addSubview(textLabel)
         
-        MainActor.assumeIsolated {
-            textLabel.addObserver(self, forKeyPath: "font", options: [.old,.new], context: kvoContext)
-        }
+        textLabel.addObserver(self, forKeyPath: "font", options: [.old,.new], context: kvoContext)
         
         _textLabel = textLabel
         return textLabel
@@ -110,10 +108,8 @@ open class FSPagerViewCell: UICollectionViewCell {
     }
     
     deinit {
-        MainActor.assumeIsolated {
-            if let textLabel = _textLabel {
-                textLabel.removeObserver(self, forKeyPath: "font", context: kvoContext)
-            }
+        if let textLabel = _textLabel {
+            textLabel.removeObserver(self, forKeyPath: "font", context: kvoContext)
         }
     }
     
@@ -144,14 +140,12 @@ open class FSPagerViewCell: UICollectionViewCell {
     }
     
     open override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if context == kvoContext {
-            if keyPath == "font" {
-                Task { @MainActor in
+        DispatchQueue.main.async {
+            if context == kvoContext {
+                if keyPath == "font" {
                     self.setNeedsLayout()
                 }
-            }
-        } else {
-            Task { @MainActor in
+            } else {
                 super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
             }
         }
