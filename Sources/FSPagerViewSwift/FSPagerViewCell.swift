@@ -147,8 +147,12 @@ open class FSPagerViewCell: UICollectionViewCell {
                     self.setNeedsLayout()
                 }
             } else {
-                super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+                self.handleObserveValue(forKeyPath: keyPath, of: object, change: change, context: context)
             }
         }
+    }
+    
+    func handleObserveValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
     }
 }
