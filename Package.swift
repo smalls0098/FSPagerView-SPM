@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "FSPagerView-SPM",
     platforms: [
-        .iOS(.v15) // 필요한 최소 iOS 버전 설정
+        .iOS(.v13) // 필요한 최소 iOS 버전 설정
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
